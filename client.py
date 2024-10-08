@@ -1,14 +1,7 @@
 import socket
-from cryptography.fernet import Fernet
-from caesar_cipher import CaesarCipher
-from vignere_cipher import VignereCipher
+from cipher import CaesarCipher, VignereCipher
 
-# Memuat kunci enkripsi
-with open('secret.key', 'rb') as key_file:
-    key = key_file.read()
-
-cipher_suite = CaesarCipher()
-vignere_suite = VignereCipher()
+cipher_suite = CaesarCipher() # Ganti sesuai dengan cipher yang ingin digunakan
 
 def start_client(client_name):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,8 +15,7 @@ def start_client(client_name):
                 # Menerima pesan dari server
                 data = client_socket.recv(1024)
                 
-                # message = cipher_suite.decrypt(data).decode()
-                message = vignere_suite.decrypt(data).decode()
+                message = cipher_suite.decrypt(data).decode()
                 
                 if message:
                     print(f"\r{message}\n{client_name} > ", end='')  # Tetap tampilkan client_name >
@@ -41,8 +33,7 @@ def start_client(client_name):
         if message.lower() == 'exit':
             break
         
-        # encrypted_message = cipher_suite.encrypt(message.encode())
-        encrypted_message = vignere_suite.encrypt(message.encode())
+        encrypted_message = cipher_suite.encrypt(message.encode())
         
         client_socket.sendall(encrypted_message)
 
