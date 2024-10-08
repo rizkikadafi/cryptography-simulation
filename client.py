@@ -1,7 +1,7 @@
 import socket
-from cipher import CaesarCipher, VignereCipher
+from cipher import CaesarCipher, VignereCipher, SubstitutionCipher
 
-cipher_suite = CaesarCipher() # Ganti sesuai dengan cipher yang ingin digunakan
+cipher_suite = SubstitutionCipher() # Ganti sesuai dengan cipher yang ingin digunakan
 
 def start_client(client_name):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -9,8 +9,10 @@ def start_client(client_name):
 
     print(f"{client_name} terhubung ke MITM Proxy")
 
+    stop_flag = threading.Event()
+
     def receive_messages():
-        while True:
+        while not stop_flag.is_set():
             try:
                 # Menerima pesan dari server
                 data = client_socket.recv(1024)
@@ -25,19 +27,27 @@ def start_client(client_name):
                 print(f"Error receiving message: {e}")
                 break
 
-    thread = threading.Thread(target=receive_messages)
-    thread.start()
+    receive_thread = threading.Thread(target=receive_messages)
+    receive_thread.start()
 
-    while True:
-        message = input(f"{client_name} > ")
-        if message.lower() == 'exit':
-            break
-        
-        encrypted_message = cipher_suite.encrypt(message.encode())
-        
-        client_socket.sendall(encrypted_message)
+    def send_messages():
+        while not stop_flag.is_set():
+            message = input(f"{client_name} > ")
+            if message.lower() == 'exit':
+                stop_flag.set()
+                break
+            
+            encrypted_message = cipher_suite.encrypt(message.encode())
+            
+            client_socket.sendall(encrypted_message)
 
-    client_socket.close()
+        client_socket.close()
+
+    send_thread = threading.Thread(target=send_messages)
+    send_thread.start()
+
+    receive_thread.join()
+    send_thread.join()   
 
 if __name__ == "__main__":
     import sys
