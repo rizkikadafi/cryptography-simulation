@@ -1,4 +1,4 @@
-class CaesarChiper:
+class CaesarCipher:
     def __init__(self, key=3):
         self.key = key
 
@@ -25,7 +25,7 @@ class CaesarChiper:
         return decrypted.encode()
 
 if __name__ == "__main__":
-    cipher = CaesarChiper()
+    cipher = CaesarCipher()
     plaintext = "hello"
     encrypted = cipher.encrypt(plaintext.encode())
     print(f"Plaintext: {plaintext}")
